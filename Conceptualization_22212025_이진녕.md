@@ -1,7 +1,10 @@
-[Conceptualization] 결제 및 할인 엔진 (Payment & Discount Engine)
-Student Info
-Name: 진녕
-Major: 컴퓨터공학부 (3학년)
+[Conceptualization]  
+🛒 결제 및 할인 엔진 (Payment & Discount Engine)  
+|Student No|22212025|
+
+|Name|이진녕|
+|E-mail|vbnm9247@naver.ocm|
+
 Project Title: OOP 원칙을 적용한 유연한 결제 및 할인 엔진 설계
 
 [ Revision history ]
@@ -35,7 +38,7 @@ References
 2. System context diagram
 본 시스템은 고객의 주문 요청을 처리하며, 마케터(관리자)의 정책 변경을 설정 파일(AppConfig)을 통해 반영합니다.
 
-코드 스니펫
+```mermaid
 flowchart TD
     classDef main fill:#E3F2FD,stroke:#1565C0,stroke-width:4px,font-size:18px,font-weight:bold;
     classDef actor fill:#FFFDE7,stroke:#FBC02D,stroke-width:2px;
@@ -50,7 +53,22 @@ flowchart TD
     System ==>|"3. 최종 금액 승인 요청"| PG
     PG ==>|"4. 승인 결과 반환"| System
     System ==>|"5. 결제 완료 알림"| Customer
+```
 
+### 2.1 Core System Classes (시스템 핵심 클래스 구성)
+시스템 내부는 SOLID 원칙을 준수하는 다음과 같은 핵심 클래스들로 구성됩니다:
+
+- **Member (Domain)**: 회원 엔티티 (ID, 이름, 등급 정보 포함).
+- **MemberService (Interface)**: 회원 가입 및 조회를 위한 서비스 인터페이스.
+- **MemberRepository (Interface)**: 회원 데이터 접근을 추상화한 인터페이스 (Memory/DB 등 확장 가능).
+- **DiscountPolicy (Interface)**: 할인 로직을 추상화한 핵심 인터페이스 (OCP의 핵심).
+    - *FixDiscountPolicy*: 고정 금액 할인 구현체.
+    - *RateDiscountPolicy*: 정률(%) 할인 구현체.
+- **Order (Domain)**: 주문 상세 정보 및 최종 결제 금액을 담는 객체.
+- **OrderService (Interface)**: 주문 생성 및 할인 정책을 적용하여 최종 결과를 산출하는 서비스 인터페이스.
+- **AppConfig**: 실제 구현 객체를 생성하고 의존관계를 주입(DI)하는 설정 클래스 (DIP 준수).
+
+---
 3. Use case list
 Actor	Use Case	Description
 Customer	등급별 할인 적용	사용자의 등급(VIP, 일반) 정보를 바탕으로 적절한 할인 금액을 계산함.
