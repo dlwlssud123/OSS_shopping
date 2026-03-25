@@ -15,6 +15,7 @@
 | Revision date | Version # | Description | Author |
 | :--- | :--- | :--- | :--- |
 | 2026/03/17 | 1.0.0 | First Draft 프로젝트 컨셉 확립 | 이진녕 |
+| 2026/03/25 | 1.1.0 | Problem statement 부동 소수점 오류 내용 추가 | 이진녕 |
 
 ---
 
