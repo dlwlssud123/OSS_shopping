@@ -16,7 +16,7 @@
 | :--- | :--- | :--- | :--- |
 | 2026/03/17 | 1.0.0 | First Draft 프로젝트 컨셉 확립 | 이진녕 |
 | 2026/03/25 | 1.1.0 | Problem statement 부동 소수점 오류 내용 추가 | 이진녕 |
-| 2026/03/31 | 1.2.0 | Refine Conceptualization doc to remove over-engineering phrases | 이진녕 |
+| 2026/03/31 | 1.2.0 | 일부 over engineering 부분 및 부족한 부분 수정 | 이진녕 |
 
 ---
 
