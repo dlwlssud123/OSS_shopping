@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSS Mall - 결제 및 할인 엔진 시뮬레이터</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <span class="logo-icon">🛒</span>
+                <h1>OSS Mall Engine</h1>
+            </div>
+            <div class="server-config">
+                <label for="api-url">API Server:</label>
+                <input type="text" id="api-url" value="" placeholder="http://localhost:8080">
+                <button id="btn-init-data" class="btn-secondary">데모 데이터 초기화</button>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="app-main">
+            <!-- Left Panel: Products & Customer Selector -->
+            <section class="left-panel">
+                <div class="panel-card customer-section">
+                    <h2>👤 구매 회원 등급 선택</h2>
+                    <div class="customer-selector-container">
+                        <select id="select-customer" class="styled-select">
+                            <option value="">고객 정보 로드 중...</option>
+                        </select>
+                        <div class="customer-badge-info">
+                            <span id="badge-grade" class="badge">등급 미선택</span>
+                            <span class="badge-desc">VIP/VVIP는 10% 등급 할인 적용</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-card products-section">
+                    <h2>📦 상품 카탈로그</h2>
+                    <div id="product-list" class="product-grid">
+                        <div class="loading-spinner">상품 정보를 가져오는 중...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Cart, Payment Info & Logs -->
+            <section class="right-panel">
+                <!-- Cart & Summary -->
+                <div class="panel-card cart-section">
+                    <h2>🛍️ 장바구니 (Cart)</h2>
+                    <div id="cart-items" class="cart-items-container">
+                        <p class="empty-cart-msg">장바구니가 비어 있습니다.</p>
+                    </div>
+                    
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>총 상품 금액</span>
+                            <span id="total-original">0원</span>
+                        </div>
+                        <div class="summary-row discount">
+                            <span>예상 할인 금액</span>
+                            <span id="total-discount">-0원</span>
+                        </div>
+                        <div class="summary-row final">
+                            <span>최종 결제 예상액</span>
+                            <span id="total-final">0원</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Control -->
+                <div class="panel-card payment-section">
+                    <h2>💳 결제 승인 요청 (UC5)</h2>
+                    <div class="form-group">
+                        <label for="idempotency-key">
+                            멱등성 키 (Idempotency Key) 
+                            <button id="btn-regen-key" class="btn-mini">새 키 생성</button>
+                        </label>
+                        <input type="text" id="idempotency-key" class="styled-input" readonly>
+                    </div>
+
+                    <div class="payment-hints">
+                        <p>💡 <strong>PG 실패 시나리오 테스트:</strong> 고객 정보에서 <code>FAIL_USER</code>를 선택해 구매하거나, 999,999원 이상 결제하면 결제가 거절되고 재고 보상 롤백 트랜잭션이 작동합니다.</p>
+                        <p>💡 <strong>멱등성 테스트:</strong> 결제 후 '새 키 생성'을 하지 않고 동일한 키로 다시 결제를 누르면 중복 처리가 차단됩니다.</p>
+                    </div>
+
+                    <button id="btn-submit-payment" class="btn-primary btn-block">결제하기</button>
+                </div>
+
+                <!-- Live Transaction Logs -->
+                <div class="panel-card logs-section">
+                    <h2>📜 실시간 트랜잭션 로그</h2>
+                    <div id="log-console" class="log-console">
+                        <div class="log-entry info">시뮬레이터가 준비되었습니다. '데모 데이터 초기화' 버튼을 눌러 시작해 주세요.</div>
+                    </div>
+                    <button id="btn-clear-logs" class="btn-mini-secondary">로그 비우기</button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
