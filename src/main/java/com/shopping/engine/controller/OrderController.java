@@ -36,6 +36,11 @@ public class OrderController {
         this.customerRepository = customerRepository;
     }
 
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderResponseDto>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
     @PostMapping("/orders")
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto request) {
         log.info("Received order request: {}", request);

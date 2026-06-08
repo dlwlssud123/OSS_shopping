@@ -140,6 +140,14 @@ public class OrderService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(o -> makeOrderResponseDto(o, null, null))
+                .sorted((o1, o2) -> o2.orderId().compareTo(o1.orderId()))
+                .toList();
+    }
+
     @Transactional
     public OrderResponseDto cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)

@@ -7,7 +7,6 @@ let selectedCustomer = null;
 
 // DOM Elements
 const apiInput = document.getElementById('api-url');
-const btnInitData = document.getElementById('btn-init-data');
 const selectCustomer = document.getElementById('select-customer');
 const badgeGrade = document.getElementById('badge-grade');
 const productList = document.getElementById('product-list');
@@ -28,7 +27,6 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Event Listeners
     apiInput.addEventListener('change', updateApiUrl);
-    btnInitData.addEventListener('click', initDemoData);
     selectCustomer.addEventListener('change', handleCustomerChange);
     btnRegenKey.addEventListener('click', generateIdempotencyKey);
     btnSubmitPayment.addEventListener('click', submitPayment);
