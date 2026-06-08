@@ -21,6 +21,7 @@ const btnSubmitPayment = document.getElementById('btn-submit-payment');
 const logConsole = document.getElementById('log-console');
 const btnClearLogs = document.getElementById('btn-clear-logs');
 const btnAdminMode = document.getElementById('btn-admin-mode');
+const gradeDiscountDesc = document.getElementById('grade-discount-desc');
 
 // App Initialization
 window.addEventListener('DOMContentLoaded', () => {
@@ -82,8 +83,22 @@ async function fetchPolicies() {
         if (!res.ok) throw new Error('API 응답 오류');
         policiesSetting = await res.json();
         addLog('최신 할인 정책 설정을 가져왔습니다.', 'info');
+        updateGradeDiscountDesc();
     } catch (e) {
         throw new Error(`할인 정책 조회 실패: ${e.message}`);
+    }
+}
+
+function updateGradeDiscountDesc() {
+    if (!gradeDiscountDesc || !policiesSetting || policiesSetting.length === 0) return;
+    const ratePol = policiesSetting.find(p => p.type === 'RATE');
+    if (ratePol) {
+        if (ratePol.enabled) {
+            const percent = Math.round(ratePol.discountRate * 100);
+            gradeDiscountDesc.textContent = `VIP/VVIP는 ${percent}% 등급 할인 적용`;
+        } else {
+            gradeDiscountDesc.textContent = `VIP/VVIP 등급 할인 비활성화됨`;
+        }
     }
 }
 
