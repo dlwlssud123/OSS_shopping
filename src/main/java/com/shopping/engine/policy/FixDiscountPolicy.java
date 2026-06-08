@@ -17,10 +17,6 @@ public class FixDiscountPolicy implements DiscountPolicy {
         this.settings = settings;
     }
 
-    public FixDiscountPolicy() {
-        this(new DiscountPolicySettings());
-    }
-
     @Override
     public int getPriority() {
         return settings.getFixPolicy().getPriority();

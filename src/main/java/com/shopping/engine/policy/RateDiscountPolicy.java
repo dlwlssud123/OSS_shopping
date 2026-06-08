@@ -18,10 +18,6 @@ public class RateDiscountPolicy implements DiscountPolicy {
         this.settings = settings;
     }
 
-    public RateDiscountPolicy() {
-        this(new DiscountPolicySettings());
-    }
-
     @Override
     public int getPriority() {
         return settings.getRatePolicy().getPriority();

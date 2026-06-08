@@ -1,9 +1,11 @@
 package com.shopping.engine.policy;
 
 import com.shopping.engine.domain.Customer;
+import com.shopping.engine.domain.DiscountPolicySetting;
 import com.shopping.engine.domain.Grade;
 import com.shopping.engine.domain.OrderItem;
 import com.shopping.engine.domain.Product;
+import com.shopping.engine.repository.DiscountPolicySettingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +23,18 @@ class PolicyResolverTest {
 
     @BeforeEach
     void setUp() {
-        // Mock 또는 실제 구현체를 직접 생성하여 체인에 주입
-        DiscountPolicy ratePolicy = new RateDiscountPolicy(); // Priority 1, Exclusive false (VIP 이상 10%)
-        DiscountPolicy fixPolicy = new FixDiscountPolicy();   // Priority 2, Exclusive true (1000원 할인)
+        DiscountPolicySettingRepository mockRepo = org.mockito.Mockito.mock(DiscountPolicySettingRepository.class);
+        DiscountPolicySetting rateSetting = new DiscountPolicySetting(
+                "RATE", "VIP Grade Rate Discount", true, 1, false, new BigDecimal("0.10"), BigDecimal.ZERO);
+        DiscountPolicySetting fixSetting = new DiscountPolicySetting(
+                "FIX", "Fix Discount", true, 2, true, BigDecimal.ZERO, new BigDecimal("1000.00"));
+        
+        org.mockito.Mockito.when(mockRepo.findById("RATE")).thenReturn(java.util.Optional.of(rateSetting));
+        org.mockito.Mockito.when(mockRepo.findById("FIX")).thenReturn(java.util.Optional.of(fixSetting));
+        
+        DiscountPolicySettings settings = new DiscountPolicySettings(mockRepo);
+        DiscountPolicy ratePolicy = new RateDiscountPolicy(settings);
+        DiscountPolicy fixPolicy = new FixDiscountPolicy(settings);
         policyResolver = new PolicyResolver(Arrays.asList(fixPolicy, ratePolicy));
     }
 
@@ -94,8 +105,20 @@ class PolicyResolverTest {
     @DisplayName("정책 설정에서 RATE 할인을 비활성화하면 VIP도 정액 할인만 적용된다")
     void dynamicPolicySettingDisablesRatePolicy() {
         // given
-        DiscountPolicySettings settings = new DiscountPolicySettings();
+        DiscountPolicySettingRepository mockRepo = org.mockito.Mockito.mock(DiscountPolicySettingRepository.class);
+        DiscountPolicySetting rateSetting = new DiscountPolicySetting(
+                "RATE", "VIP Grade Rate Discount", true, 1, false, new BigDecimal("0.10"), BigDecimal.ZERO);
+        DiscountPolicySetting fixSetting = new DiscountPolicySetting(
+                "FIX", "Fix Discount", true, 2, true, BigDecimal.ZERO, new BigDecimal("1000.00"));
+        
+        org.mockito.Mockito.when(mockRepo.findById("RATE")).thenReturn(java.util.Optional.of(rateSetting));
+        org.mockito.Mockito.when(mockRepo.findById("FIX")).thenReturn(java.util.Optional.of(fixSetting));
+        org.mockito.Mockito.when(mockRepo.save(org.mockito.Mockito.any(DiscountPolicySetting.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        DiscountPolicySettings settings = new DiscountPolicySettings(mockRepo);
         settings.update("RATE", false, null, null, null, null);
+        
         PolicyResolver resolver = new PolicyResolver(Arrays.asList(
                 new FixDiscountPolicy(settings),
                 new RateDiscountPolicy(settings)

@@ -1,6 +1,10 @@
 package com.shopping.engine.policy;
 
+import com.shopping.engine.domain.DiscountPolicySetting;
+import com.shopping.engine.repository.DiscountPolicySettingRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -8,77 +12,88 @@ import java.util.List;
 @Component
 public class DiscountPolicySettings {
 
-    private final PolicySetting ratePolicy = new PolicySetting(
-            "RATE",
-            "VIP Grade Rate Discount",
-            true,
-            1,
-            false,
-            new BigDecimal("0.10"),
-            BigDecimal.ZERO
-    );
+    private final DiscountPolicySettingRepository repository;
 
-    private final PolicySetting fixPolicy = new PolicySetting(
-            "FIX",
-            "Fix Discount",
-            true,
-            2,
-            true,
-            BigDecimal.ZERO,
-            new BigDecimal("1000.00")
-    );
+    public DiscountPolicySettings(DiscountPolicySettingRepository repository) {
+        this.repository = repository;
+    }
 
+    @PostConstruct
+    @Transactional
+    public void init() {
+        if (repository.count() == 0) {
+            repository.save(new DiscountPolicySetting(
+                    "RATE",
+                    "VIP Grade Rate Discount",
+                    true,
+                    1,
+                    false,
+                    new BigDecimal("0.10"),
+                    BigDecimal.ZERO
+            ));
+            repository.save(new DiscountPolicySetting(
+                    "FIX",
+                    "Fix Discount",
+                    true,
+                    2,
+                    true,
+                    BigDecimal.ZERO,
+                    new BigDecimal("1000.00")
+            ));
+        }
+    }
+
+    @Transactional(readOnly = true)
     public List<PolicySetting> findAll() {
-        return List.of(ratePolicy.copy(), fixPolicy.copy());
+        return repository.findAll().stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
+    @Transactional(readOnly = true)
     public PolicySetting getRatePolicy() {
-        return ratePolicy;
+        return getPolicy("RATE");
     }
 
+    @Transactional(readOnly = true)
     public PolicySetting getFixPolicy() {
-        return fixPolicy;
+        return getPolicy("FIX");
     }
 
+    @Transactional(readOnly = true)
     public PolicySetting getPolicy(String type) {
         String normalized = normalize(type);
-        if ("RATE".equals(normalized)) {
-            return ratePolicy;
-        }
-        if ("FIX".equals(normalized)) {
-            return fixPolicy;
-        }
-        throw new IllegalArgumentException("Unknown policy type: " + type);
+        DiscountPolicySetting setting = repository.findById(normalized)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown policy type: " + type));
+        return mapToDto(setting);
     }
 
+    @Transactional
     public PolicySetting update(String type, Boolean enabled, Integer priority, Boolean exclusive,
                                 BigDecimal discountRate, BigDecimal discountAmount) {
-        PolicySetting setting = getPolicy(type);
-        if (enabled != null) {
-            setting.enabled = enabled;
+        String normalized = normalize(type);
+        DiscountPolicySetting setting = repository.findById(normalized)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown policy type: " + type));
+
+        boolean nextEnabled = enabled != null ? enabled : setting.isEnabled();
+        int nextPriority = priority != null ? priority : setting.getPriority();
+        boolean nextExclusive = exclusive != null ? exclusive : setting.isExclusive();
+        BigDecimal nextRate = discountRate != null ? discountRate : setting.getDiscountRate();
+        BigDecimal nextAmount = discountAmount != null ? discountAmount : setting.getDiscountAmount();
+
+        if (nextPriority < 0) {
+            throw new IllegalArgumentException("priority must be greater than or equal to zero");
         }
-        if (priority != null) {
-            if (priority < 0) {
-                throw new IllegalArgumentException("priority must be greater than or equal to zero");
-            }
-            setting.priority = priority;
+        if (nextRate.signum() < 0 || nextRate.compareTo(BigDecimal.ONE) > 0) {
+            throw new IllegalArgumentException("discountRate must be between 0 and 1");
         }
-        if (exclusive != null) {
-            setting.exclusive = exclusive;
+        if (nextAmount.signum() < 0) {
+            throw new IllegalArgumentException("discountAmount must be greater than or equal to zero");
         }
-        if (discountRate != null) {
-            if (discountRate.signum() < 0 || discountRate.compareTo(BigDecimal.ONE) > 0) {
-                throw new IllegalArgumentException("discountRate must be between 0 and 1");
-            }
-            setting.discountRate = discountRate;
-        }
-        if (discountAmount != null) {
-            if (discountAmount.signum() < 0) {
-                throw new IllegalArgumentException("discountAmount must be greater than or equal to zero");
-            }
-            setting.discountAmount = discountAmount;
-        }
-        return setting.copy();
+
+        setting.update(nextEnabled, nextPriority, nextExclusive, nextRate, nextAmount);
+        DiscountPolicySetting saved = repository.save(setting);
+        return mapToDto(saved);
     }
 
     private String normalize(String type) {
@@ -88,14 +103,26 @@ public class DiscountPolicySettings {
         return type.trim().toUpperCase();
     }
 
+    private PolicySetting mapToDto(DiscountPolicySetting setting) {
+        return new PolicySetting(
+                setting.getType(),
+                setting.getName(),
+                setting.isEnabled(),
+                setting.getPriority(),
+                setting.isExclusive(),
+                setting.getDiscountRate(),
+                setting.getDiscountAmount()
+        );
+    }
+
     public static class PolicySetting {
         private final String type;
         private final String name;
-        private boolean enabled;
-        private int priority;
-        private boolean exclusive;
-        private BigDecimal discountRate;
-        private BigDecimal discountAmount;
+        private final boolean enabled;
+        private final int priority;
+        private final boolean exclusive;
+        private final BigDecimal discountRate;
+        private final BigDecimal discountAmount;
 
         private PolicySetting(String type, String name, boolean enabled, int priority, boolean exclusive,
                               BigDecimal discountRate, BigDecimal discountAmount) {
@@ -106,10 +133,6 @@ public class DiscountPolicySettings {
             this.exclusive = exclusive;
             this.discountRate = discountRate;
             this.discountAmount = discountAmount;
-        }
-
-        private PolicySetting copy() {
-            return new PolicySetting(type, name, enabled, priority, exclusive, discountRate, discountAmount);
         }
 
         public String getType() {
