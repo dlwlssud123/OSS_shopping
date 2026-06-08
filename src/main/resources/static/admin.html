@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSS Mall - 관리자 모드</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <span class="logo-icon">⚙️</span>
+                <h1>OSS Mall (관리자 모드)</h1>
+            </div>
+            <div class="server-config">
+                <label for="api-url">API Server:</label>
+                <input type="text" id="api-url" value="http://localhost:8080" placeholder="http://localhost:8080">
+                <button id="btn-init-data" class="btn-secondary">데모 데이터 초기화</button>
+                <a href="index.html" class="btn-admin-link">🛒 구매자 모드</a>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="app-main admin-grid">
+            <!-- Left Panel: Policies & Product Manager -->
+            <section class="left-panel">
+                
+                <!-- 1. Discount Policy Manager (UC3) -->
+                <div class="panel-card">
+                    <h2>🏷️ 할인 정책 런타임 설정 (UC3)</h2>
+                    <div class="policies-container">
+                        
+                        <!-- Rate Policy Form -->
+                        <div class="policy-card">
+                            <div class="policy-card-header">
+                                <span>정률 할인 정책 (RATE)</span>
+                                <label class="switch-container">
+                                    <input type="checkbox" id="policy-rate-active"> 활성화
+                                </label>
+                            </div>
+                            <div class="policy-form-row">
+                                <div class="form-group">
+                                    <label for="policy-rate-priority">우선순위 (Priority)</label>
+                                    <input type="number" id="policy-rate-priority" class="styled-input" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="policy-rate-exclusive">단독 적용 여부 (Exclusive)</label>
+                                    <select id="policy-rate-exclusive" class="styled-select" style="min-width: unset; width: 100%;">
+                                        <option value="true">True (단독 적용)</option>
+                                        <option value="false">False (중복 허용)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="policy-rate-value">할인 비율 (Rate, 0.0 ~ 1.0)</label>
+                                <input type="number" id="policy-rate-value" class="styled-input" step="0.01" min="0" max="1">
+                            </div>
+                            <button id="btn-save-rate-policy" class="btn-secondary btn-block">정률 정책 저장</button>
+                        </div>
+
+                        <!-- Fix Policy Form -->
+                        <div class="policy-card">
+                            <div class="policy-card-header">
+                                <span>정액 할인 정책 (FIX)</span>
+                                <label class="switch-container">
+                                    <input type="checkbox" id="policy-fix-active"> 활성화
+                                </label>
+                            </div>
+                            <div class="policy-form-row">
+                                <div class="form-group">
+                                    <label for="policy-fix-priority">우선순위 (Priority)</label>
+                                    <input type="number" id="policy-fix-priority" class="styled-input" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="policy-fix-exclusive">단독 적용 여부 (Exclusive)</label>
+                                    <select id="policy-fix-exclusive" class="styled-select" style="min-width: unset; width: 100%;">
+                                        <option value="true">True (단독 적용)</option>
+                                        <option value="false">False (중복 허용)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="policy-fix-value">할인 금액 (원)</label>
+                                <input type="number" id="policy-fix-value" class="styled-input" min="0">
+                            </div>
+                            <button id="btn-save-fix-policy" class="btn-secondary btn-block">정액 정책 저장</button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 2. Product Manager (UC1) -->
+                <div class="panel-card">
+                    <h2>📦 상품 카탈로그 관리 (UC1)</h2>
+                    
+                    <!-- Product Add Form -->
+                    <div class="admin-form">
+                        <h3>🆕 새 상품 추가</h3>
+                        <div class="admin-form-row">
+                            <div class="form-group">
+                                <label for="prod-name">상품명</label>
+                                <input type="text" id="prod-name" class="styled-input" placeholder="예: 맥북">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-price">가격 (원)</label>
+                                <input type="number" id="prod-price" class="styled-input" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="prod-stock">재고 수량</label>
+                                <input type="number" id="prod-stock" class="styled-input" placeholder="0">
+                            </div>
+                            <button id="btn-add-product" class="btn-primary">추가</button>
+                        </div>
+                    </div>
+
+                    <!-- Product Table -->
+                    <div class="admin-table-container">
+                        <table id="table-products" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>상품명</th>
+                                    <th>가격</th>
+                                    <th>재고</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="loading-spinner">상품 정보를 로드 중...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right Panel: Orders Manager & Logs -->
+            <section class="right-panel">
+                
+                <!-- 3. Orders Manager (UC6) -->
+                <div class="panel-card">
+                    <h2>📑 전체 주문 및 취소 관리 (UC6)</h2>
+                    <div class="admin-table-container" style="max-height: 500px; overflow-y: auto;">
+                        <table id="table-orders" class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>상태</th>
+                                    <th>결제금액 (할인액)</th>
+                                    <th>멱등성 키</th>
+                                    <th>작업</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="loading-spinner">주문 내역을 로드 중...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Action Logs -->
+                <div class="panel-card logs-section">
+                    <h2>📜 관리자 작업 로그</h2>
+                    <div id="log-console" class="log-console">
+                        <div class="log-entry info">관리자 모드가 준비되었습니다.</div>
+                    </div>
+                    <button id="btn-clear-logs" class="btn-mini-secondary">로그 비우기</button>
+                </div>
+
+            </section>
+        </main>
+    </div>
+    
+    <script src="admin.js"></script>
+</body>
+</html>

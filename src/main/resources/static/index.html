@@ -14,12 +14,12 @@
         <header class="app-header">
             <div class="header-logo">
                 <span class="logo-icon">🛒</span>
-                <h1>OSS Mall Engine</h1>
+                <h1>OSS Mall (구매자 모드)</h1>
             </div>
             <div class="server-config">
                 <label for="api-url">API Server:</label>
-                <input type="text" id="api-url" value="" placeholder="http://localhost:8080">
-                <button id="btn-init-data" class="btn-secondary">데모 데이터 초기화</button>
+                <input type="text" id="api-url" value="http://localhost:8080" placeholder="http://localhost:8080">
+                <button id="btn-admin-mode" class="btn-admin-link">⚙️ 관리자 모드</button>
             </div>
         </header>
 
@@ -43,6 +43,7 @@
                 <div class="panel-card products-section">
                     <h2>📦 상품 카탈로그</h2>
                     <div id="product-list" class="product-grid">
+                        <!-- Products will be dynamically loaded here -->
                         <div class="loading-spinner">상품 정보를 가져오는 중...</div>
                     </div>
                 </div>
@@ -85,7 +86,7 @@
                     </div>
 
                     <div class="payment-hints">
-                        <p>💡 <strong>PG 실패 시나리오 테스트:</strong> 고객 정보에서 <code>FAIL_USER</code>를 선택해 구매하거나, 999,999원 이상 결제하면 결제가 거절되고 재고 보상 롤백 트랜잭션이 작동합니다.</p>
+                        <p>💡 <strong>PG 실패 시나리오 테스트:</strong> 고객 정보에서 <code>FAIL_USER</code>를 생성하여 구매하거나, 999,999원 이상 결제하면 결제가 거절되고 재고 보상 롤백 트랜잭션이 작동합니다.</p>
                         <p>💡 <strong>멱등성 테스트:</strong> 결제 후 '새 키 생성'을 하지 않고 동일한 키로 다시 결제를 누르면 중복 처리가 차단됩니다.</p>
                     </div>
 

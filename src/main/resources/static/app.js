@@ -1,6 +1,5 @@
 // State Management
-// 접속한 호스트를 자동으로 감지하여 API 주소로 설정 (상대 경로 및 VM 배포 시 자동 대응)
-let apiBaseUrl = window.location.origin;
+let apiBaseUrl = 'http://localhost:8080';
 let products = [];
 let customers = [];
 let cart = {}; // productId -> quantity
@@ -8,7 +7,6 @@ let selectedCustomer = null;
 
 // DOM Elements
 const apiInput = document.getElementById('api-url');
-const btnInitData = document.getElementById('btn-init-data');
 const selectCustomer = document.getElementById('select-customer');
 const badgeGrade = document.getElementById('badge-grade');
 const productList = document.getElementById('product-list');
@@ -21,29 +19,29 @@ const btnRegenKey = document.getElementById('btn-regen-key');
 const btnSubmitPayment = document.getElementById('btn-submit-payment');
 const logConsole = document.getElementById('log-console');
 const btnClearLogs = document.getElementById('btn-clear-logs');
+const btnAdminMode = document.getElementById('btn-admin-mode');
 
 // App Initialization
 window.addEventListener('DOMContentLoaded', () => {
     generateIdempotencyKey();
-    
-    // 현재 접속 주소로 인풋 필드 초기화
-    apiInput.value = apiBaseUrl;
     updateApiUrl();
     
     // Event Listeners
     apiInput.addEventListener('change', updateApiUrl);
-    btnInitData.addEventListener('click', initDemoData);
     selectCustomer.addEventListener('change', handleCustomerChange);
     btnRegenKey.addEventListener('click', generateIdempotencyKey);
     btnSubmitPayment.addEventListener('click', submitPayment);
     btnClearLogs.addEventListener('click', clearLogs);
+    if (btnAdminMode) {
+        btnAdminMode.addEventListener('click', handleAdminModeAccess);
+    }
 
     // Initial load
     loadData();
 });
 
 function updateApiUrl() {
-    apiBaseUrl = apiInput.value.trim() || window.location.origin;
+    apiBaseUrl = apiInput.value.trim() || 'http://localhost:8080';
     addLog(`서버 API 주소가 설정되었습니다: ${apiBaseUrl}`, 'info');
 }
 
@@ -118,16 +116,16 @@ async function initDemoData() {
 function renderCustomers() {
     selectCustomer.innerHTML = '<option value="">-- 회원을 선택하세요 --</option>';
     
-    customers.forEach(c => {
+    // 추가로 강제 결제 실패 모의 테스트용 회원 생성
+    const mockFailCustomer = { id: 9999, name: 'FAIL_USER (결제실패 테스트용)', grade: 'BASIC' };
+    const allCustomers = [...customers, mockFailCustomer];
+
+    allCustomers.forEach(c => {
         const option = document.createElement('option');
         option.value = c.id;
         option.dataset.name = c.name;
         option.dataset.grade = c.grade;
-        if (c.name === 'FAIL_USER') {
-            option.textContent = `${c.name} [${c.grade}] (결제실패 테스트용)`;
-        } else {
-            option.textContent = `${c.name} [${c.grade}]`;
-        }
+        option.textContent = `${c.name} [${c.grade}]`;
         selectCustomer.appendChild(option);
     });
     
@@ -235,11 +233,6 @@ function updateCartQty(productId, delta) {
     renderCart();
 }
 
-// Format currency
-function formatWon(value) {
-    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
-}
-
 function renderCart() {
     cartItems.innerHTML = '';
     const cartKeys = Object.keys(cart);
@@ -288,7 +281,7 @@ function updateCartSummary() {
         }
     });
 
-    // 로컬 예상 할인
+    // 로컬 시뮬레이션 예상 할인 산출 로직 (백엔드 PolicyResolver와 정합)
     let discountTotal = 0;
     if (selectedCustomer && Object.keys(cart).length > 0) {
         const isVip = selectedCustomer.grade === 'VIP' || selectedCustomer.grade === 'VVIP';
@@ -302,16 +295,20 @@ function updateCartSummary() {
             const itemPrice = product.price * qty;
             let itemDiscount = 0;
 
+            // 1. VIP 등급 10% 할인 (Priority 1, Exclusive = false)
             if (isVip) {
                 itemDiscount += itemPrice * 0.10;
             }
 
+            // 2. 1,000원 정액 할인 (Priority 2, Exclusive = true)
+            // exclusive 조건이므로 10% 할인이 적용되었어도 정액할인을 얹어서 하되 중단
             let remaining = itemPrice - itemDiscount;
             if (remaining > 0) {
                 let fixDiscount = Math.min(1000, remaining);
                 itemDiscount += fixDiscount;
             }
 
+            // 하한선 보정
             if (itemDiscount > itemPrice) {
                 itemDiscount = itemPrice;
             }
@@ -327,7 +324,7 @@ function updateCartSummary() {
     totalFinal.textContent = formatWon(finalTotal);
 }
 
-// Payment Submission
+// Payment Submission (UC5 API Call)
 async function submitPayment() {
     if (!selectedCustomer) {
         addLog('결제를 진행하려면 먼저 회원을 선택해 주세요.', 'warn');
@@ -348,6 +345,7 @@ async function submitPayment() {
         return;
     }
 
+    // DTO 구성
     const itemsDto = cartKeys.map(pIdKey => {
         const pId = parseInt(pIdKey);
         return {
@@ -364,6 +362,7 @@ async function submitPayment() {
 
     addLog('========================================', 'info');
     addLog('PG 결제 요청을 서버에 전송합니다...', 'info');
+    addLog(`Payload: ${JSON.stringify(requestPayload)}`, 'info');
 
     btnSubmitPayment.disabled = true;
     btnSubmitPayment.textContent = '결제 처리 중...';
@@ -386,11 +385,13 @@ async function submitPayment() {
                 addLog(`최종 결제 금액: ${formatWon(result.finalAmount)}`, 'success');
                 addLog(`할인 적용 금액: ${formatWon(result.discountAmount)}`, 'success');
                 addLog(`PG 영수증 ID: ${result.receiptId}`, 'success');
+                
+                // 장바구니 비우기
                 cart = {};
                 renderCart();
             } else if (result.status === 'FAILED') {
                 addLog(`결제 실패 (FAILED) - 보상 트랜잭션 정상 수행됨`, 'error');
-                addLog(`주문 ID: ${result.orderId}`, 'error');
+                addLog(`주문 ID: ${result.orderId} (실패 이력 저장)`, 'error');
                 addLog(`실패 사유: ${result.errorMessage}`, 'error');
                 addLog(`차감된 재고가 원상태로 롤백되었습니다.`, 'warn');
             } else {
@@ -398,8 +399,10 @@ async function submitPayment() {
             }
         } else {
             addLog(`서버 에러 (${res.status}): ${result.errorMessage || 'Unknown error'}`, 'error');
+            addLog(`재고 부족 등으로 트랜잭션이 중단되었습니다.`, 'error');
         }
 
+        // 재고 변동 확인을 위해 상품 리스트 새로고침
         await fetchProducts();
 
     } catch (e) {
@@ -408,5 +411,25 @@ async function submitPayment() {
         btnSubmitPayment.disabled = false;
         btnSubmitPayment.textContent = '결제하기';
         addLog('========================================', 'info');
+    }
+}
+
+// Helpers
+function formatWon(value) {
+    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+}
+
+function handleAdminModeAccess() {
+    const password = prompt('관리자 인증 비밀번호를 입력해 주세요:');
+    if (password === null) return;
+    
+    if (password === 'admin1234') {
+        addLog('관리자 인증에 성공했습니다. 관리자 페이지로 이동합니다.', 'success');
+        setTimeout(() => {
+            window.location.href = 'admin.html';
+        }, 500);
+    } else {
+        addLog('관리자 인증 비밀번호가 일치하지 않습니다.', 'error');
+        alert('비밀번호가 올바르지 않습니다.');
     }
 }
