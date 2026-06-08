@@ -51,7 +51,13 @@ public class OrderService {
         if (existingOrderOpt.isPresent()) {
             Order existingOrder = existingOrderOpt.get();
             log.info("Duplicate order request detected. Returning existing order: {}", existingOrder.getOrderId());
-            return makeOrderResponseDto(existingOrder, null, null);
+            String duplicateMessage = null;
+            if (existingOrder.getStatus() == OrderStatus.FAILED) {
+                duplicateMessage = "이미 실패 처리된 주문 건에 대한 중복 결제 시도입니다. (멱등성 키 재사용 제한)";
+            } else if (existingOrder.getStatus() == OrderStatus.COMPLETE) {
+                duplicateMessage = "이미 성공 완료된 주문 건에 대한 중복 결제 요청입니다.";
+            }
+            return makeOrderResponseDto(existingOrder, null, duplicateMessage);
         }
 
         // 2. 고객 조회
