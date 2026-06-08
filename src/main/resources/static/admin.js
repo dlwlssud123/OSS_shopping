@@ -175,22 +175,79 @@ function renderProductsTable() {
 
     products.forEach(p => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${p.productId}</strong></td>
-            <td>${p.name}</td>
-            <td>${formatWon(p.price)}</td>
-            <td>${p.stockQuantity}개</td>
-            <td>
-                <button class="btn-mini btn-edit" data-id="${p.productId}">수정</button>
-                <button class="btn-mini-secondary btn-delete" data-id="${p.productId}" style="margin-left:5px; border-color:var(--danger); color:var(--danger)">삭제</button>
-            </td>
-        `;
-        
-        tr.querySelector('.btn-edit').addEventListener('click', () => editProduct(p.productId));
-        tr.querySelector('.btn-delete').addEventListener('click', () => deleteProduct(p.productId));
-        
+        tr.id = `product-row-${p.productId}`;
+        renderNormalRow(tr, p);
         tableProductsBody.appendChild(tr);
     });
+}
+
+function renderNormalRow(tr, p) {
+    tr.innerHTML = `
+        <td><strong>${p.productId}</strong></td>
+        <td>${p.name}</td>
+        <td>${formatWon(p.price)}</td>
+        <td>${p.stockQuantity}개</td>
+        <td>
+            <button class="btn-mini btn-edit" data-id="${p.productId}">수정</button>
+            <button class="btn-mini-secondary btn-delete" data-id="${p.productId}" style="margin-left:5px; border-color:var(--danger); color:var(--danger)">삭제</button>
+        </td>
+    `;
+    
+    tr.querySelector('.btn-edit').addEventListener('click', () => renderEditRow(tr, p));
+    tr.querySelector('.btn-delete').addEventListener('click', () => deleteProduct(p.productId));
+}
+
+function renderEditRow(tr, p) {
+    tr.innerHTML = `
+        <td><strong>${p.productId}</strong></td>
+        <td>
+            <input type="text" class="styled-input inline-edit-name" value="${p.name}" style="padding: 4px 8px; font-size:13px; font-family:inherit; width: 140px;">
+        </td>
+        <td>
+            <input type="number" class="styled-input inline-edit-price" value="${p.price}" style="padding: 4px 8px; font-size:13px; font-family:inherit; width: 100px;">
+        </td>
+        <td>
+            <input type="number" class="styled-input inline-edit-stock" value="${p.stockQuantity}" style="padding: 4px 8px; font-size:13px; font-family:inherit; width: 70px;">
+        </td>
+        <td>
+            <button class="btn-mini btn-save" style="border-color:var(--success); color:var(--success); background-color: transparent;">저장</button>
+            <button class="btn-mini-secondary btn-cancel" style="margin-left:5px;">취소</button>
+        </td>
+    `;
+
+    tr.querySelector('.btn-save').addEventListener('click', () => saveInlineProduct(tr, p.productId));
+    tr.querySelector('.btn-cancel').addEventListener('click', () => renderNormalRow(tr, p));
+}
+
+async function saveInlineProduct(tr, id) {
+    const newName = tr.querySelector('.inline-edit-name').value.trim();
+    const newPriceVal = parseFloat(tr.querySelector('.inline-edit-price').value);
+    const newStockVal = parseInt(tr.querySelector('.inline-edit-stock').value);
+
+    if (!newName || isNaN(newPriceVal) || isNaN(newStockVal) || newPriceVal < 0 || newStockVal < 0) {
+        alert('올바른 값을 입력해 주세요. (가격과 재고는 0 이상)');
+        return;
+    }
+
+    addLog(`상품 ID ${id} 수정 요청 중...`, 'info');
+    try {
+        const res = await fetch(`${apiBaseUrl}/api/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: newName,
+                price: newPriceVal,
+                stockQuantity: newStockVal
+            })
+        });
+
+        if (!res.ok) throw new Error('상품 수정 실패');
+        addLog(`상품 ID ${id} 수정 성공!`, 'success');
+        await fetchProducts();
+    } catch (e) {
+        addLog(`상품 수정 실패: ${e.message}`, 'error');
+        alert(`상품 수정 실패: ${e.message}`);
+    }
 }
 
 async function addProduct() {
@@ -226,47 +283,6 @@ async function addProduct() {
     } catch (e) {
         addLog(`상품 추가 실패: ${e.message}`, 'error');
         alert(`상품 추가 실패: ${e.message}`);
-    }
-}
-
-async function editProduct(id) {
-    const product = products.find(p => p.productId === id);
-    if (!product) return;
-
-    const newName = prompt('수정할 상품명을 입력하세요:', product.name);
-    if (newName === null) return; // 취소
-    
-    const newPriceStr = prompt('수정할 가격을 입력하세요:', product.price);
-    if (newPriceStr === null) return;
-    const newPrice = parseFloat(newPriceStr);
-
-    const newStockStr = prompt('수정할 재고 수량을 입력하세요:', product.stockQuantity);
-    if (newStockStr === null) return;
-    const newStock = parseInt(newStockStr);
-
-    if (!newName.trim() || isNaN(newPrice) || isNaN(newStock)) {
-        alert('입력 정보가 올바르지 않습니다.');
-        return;
-    }
-
-    addLog(`상품 ID ${id} 수정 요청 중...`, 'info');
-    try {
-        const res = await fetch(`${apiBaseUrl}/api/products/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: newName.trim(),
-                price: newPrice,
-                stockQuantity: newStock
-            })
-        });
-
-        if (!res.ok) throw new Error('상품 수정 실패');
-        addLog(`상품 ID ${id} 수정 성공!`, 'success');
-        await fetchProducts();
-    } catch (e) {
-        addLog(`상품 수정 실패: ${e.message}`, 'error');
-        alert(`상품 수정 실패: ${e.message}`);
     }
 }
 
