@@ -85,7 +85,7 @@
                     </div>
 
                     <div class="payment-hints">
-                        <p>💡 <strong>PG 실패 시나리오 테스트:</strong> 고객 정보에서 <code>FAIL_USER</code>를 생성하여 구매하거나, 999,999원 이상 결제하면 결제가 거절되고 재고 보상 롤백 트랜잭션이 작동합니다.</p>
+                        <p>💡 <strong>PG 실패 시나리오 테스트:</strong> 고객 정보에서 <code>FAIL_USER</code>를 생성하여 구매하면 결제가 거절되고 재고 보상 롤백 트랜잭션이 작동합니다.</p>
                         <p>💡 <strong>멱등성 테스트:</strong> 결제 후 '새 키 생성'을 하지 않고 동일한 키로 다시 결제를 누르면 중복 처리가 차단됩니다.</p>
                     </div>
 

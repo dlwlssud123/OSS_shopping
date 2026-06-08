@@ -45,26 +45,34 @@ src/main/java/com/shopping/engine
 ├── ShoppingEngineApplication.java (메인 부트스트랩)
 ├── controller
 │   ├── OrderController.java (결제 요청 및 조회, 초기화 API)
+│   ├── ProductController.java (상품 CRUD REST API - [UC1])
+│   ├── PolicyController.java (할인 정책 런타임 수정 API - [UC3])
 │   └── dto
 │       ├── ItemDto.java
 │       ├── OrderRequestDto.java
-│       └── OrderResponseDto.java
+│       ├── OrderResponseDto.java
+│       ├── ProductRequestDto.java
+│       └── PolicyUpdateRequestDto.java
 ├── service
-│   └── OrderService.java (트랜잭션 지휘 및 동시성/보상 제어)
+│   ├── OrderService.java (트랜잭션 지휘 및 동시성/보상 제어)
+│   └── ProductService.java (상품 정보 CRUD 및 벨리데이션 서비스)
 ├── domain
 │   ├── Customer.java / Grade.java (BASIC, VIP, VVIP)
-│   ├── Product.java (재고 비즈니스 로직 포함)
+│   ├── Product.java (재고 비즈니스 로직 및 낙관적 락 버전 포함)
 │   ├── Order.java / OrderItem.java / OrderStatus.java (주문 라이프사이클)
+│   ├── DiscountPolicySetting.java (정책 설정 영속 엔티티)
 │   └── DiscountInfo.java (적용 할인 이력 엔티티)
 ├── repository
 │   ├── CustomerRepository.java
 │   ├── ProductRepository.java (비관적 락 선언)
-│   └── OrderRepository.java
+│   ├── OrderRepository.java
+│   └── DiscountPolicySettingRepository.java
 ├── policy
 │   ├── DiscountPolicy.java (인터페이스)
-│   ├── RateDiscountPolicy.java
-│   ├── FixDiscountPolicy.java
-│   └── PolicyResolver.java
+│   ├── RateDiscountPolicy.java (등급별 다형 할인 연산)
+│   ├── FixDiscountPolicy.java (정액 할인 연산)
+│   ├── PolicyResolver.java (우선순위/단독적용 런타임 해석기)
+│   └── DemoDataInitializer.java (시뮬레이션 데이터 자동 Seed)
 └── infrastructure
     ├── PaymentGateway.java
     └── MockPaymentGateway.java (PG 결제 승인 모의 객체)
@@ -72,7 +80,8 @@ src/main/java/com/shopping/engine
 src/main/resources/static (웹 프론트엔드 내장 리소스)
 ├── index.html
 ├── style.css
-└── app.js
+├── app.js (캐시 우회 탑재)
+└── admin.js (캐시 우회 탑재)
 ```
 
 ---
