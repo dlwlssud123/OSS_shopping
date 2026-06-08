@@ -106,29 +106,33 @@ async function loadAdminData() {
 }
 
 // 1. Policy Resolver Settings (UC3)
-async function fetchPolicies() {
+async function fetchPolicies(targetType = null) {
     try {
         const res = await fetch(`${apiBaseUrl}/api/policies`);
         if (!res.ok) throw new Error('할인 정책 로드 실패');
         const policies = await res.json();
         
-        // RATE 설정 셋팅
-        const ratePol = policies.find(p => p.type === 'RATE') || {};
-        policyRateActive.checked = ratePol.enabled || false;
-        policyRatePriority.value = ratePol.priority || 1;
-        policyRateExclusive.value = String(ratePol.exclusive || false);
-        policyRateBasic.value = ratePol.basicDiscountRate !== undefined ? ratePol.basicDiscountRate : 0.00;
-        policyRateVip.value = ratePol.vipDiscountRate !== undefined ? ratePol.vipDiscountRate : 0.10;
-        policyRateVvip.value = ratePol.vvipDiscountRate !== undefined ? ratePol.vvipDiscountRate : 0.20;
+        // RATE 설정 셋팅 (targetType이 없거나 'RATE'일 때만)
+        if (!targetType || targetType === 'RATE') {
+            const ratePol = policies.find(p => p.type === 'RATE') || {};
+            policyRateActive.checked = ratePol.enabled || false;
+            policyRatePriority.value = ratePol.priority || 1;
+            policyRateExclusive.value = String(ratePol.exclusive || false);
+            policyRateBasic.value = ratePol.basicDiscountRate !== undefined ? ratePol.basicDiscountRate : 0.00;
+            policyRateVip.value = ratePol.vipDiscountRate !== undefined ? ratePol.vipDiscountRate : 0.10;
+            policyRateVvip.value = ratePol.vvipDiscountRate !== undefined ? ratePol.vvipDiscountRate : 0.20;
+        }
 
-        // FIX 설정 셋팅
-        const fixPol = policies.find(p => p.type === 'FIX') || {};
-        policyFixActive.checked = fixPol.enabled || false;
-        policyFixPriority.value = fixPol.priority || 2;
-        policyFixExclusive.value = String(fixPol.exclusive || false);
-        policyFixValue.value = fixPol.discountAmount || 1000;
+        // FIX 설정 셋팅 (targetType이 없거나 'FIX'일 때만)
+        if (!targetType || targetType === 'FIX') {
+            const fixPol = policies.find(p => p.type === 'FIX') || {};
+            policyFixActive.checked = fixPol.enabled || false;
+            policyFixPriority.value = fixPol.priority || 2;
+            policyFixExclusive.value = String(fixPol.exclusive || false);
+            policyFixValue.value = fixPol.discountAmount || 1000;
+        }
         
-        addLog('런타임 할인 정책 설정을 가져왔습니다.', 'info');
+        addLog(`런타임 할인 정책 설정을 가져왔습니다.${targetType ? ` (${targetType} 갱신)` : ''}`, 'info');
     } catch (e) {
         addLog(`할인 정책 조회 에러: ${e.message}`, 'error');
     }
@@ -167,7 +171,7 @@ async function savePolicy(type) {
         if (!res.ok) throw new Error('정책 업데이트 실패');
         const updated = await res.json();
         addLog(`${type} 정책 저장 성공!`, 'success');
-        await fetchPolicies();
+        await fetchPolicies(type);
     } catch (e) {
         addLog(`정책 저장 실패: ${e.message}`, 'error');
         alert(`정책 저장 실패: ${e.message}`);
