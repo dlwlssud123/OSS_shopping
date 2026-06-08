@@ -140,6 +140,26 @@ public class OrderService {
         }
     }
 
+    @Transactional
+    public OrderResponseDto cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found with id: " + orderId));
+
+        if (order.getStatus() != OrderStatus.COMPLETE) {
+            throw new IllegalStateException("Only COMPLETE orders can be canceled. current status: " + order.getStatus());
+        }
+
+        for (OrderItem orderItem : order.getOrderItems()) {
+            Product product = productRepository.findByIdWithPessimisticLock(orderItem.getProduct().getProductId())
+                    .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + orderItem.getProduct().getProductId()));
+            product.addStock(orderItem.getQuantity());
+        }
+
+        order.changeStatus(OrderStatus.CANCELED);
+        order = orderRepository.save(order);
+        return makeOrderResponseDto(order, null, "Order canceled and stock restored");
+    }
+
     private OrderResponseDto makeOrderResponseDto(Order order, String receiptId, String errorMessage) {
         return new OrderResponseDto(
                 order.getOrderId(),

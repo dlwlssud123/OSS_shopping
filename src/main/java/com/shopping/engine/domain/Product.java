@@ -22,6 +22,9 @@ public class Product {
     @Column(nullable = false)
     private int stockQuantity;
 
+    @Version
+    private Long version;
+
     protected Product() {
     }
 
@@ -41,6 +44,18 @@ public class Product {
 
     public void addStock(int quantity) {
         this.stockQuantity += quantity;
+    }
+
+    public void update(String name, BigDecimal price, int stockQuantity) {
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("price must be greater than or equal to zero");
+        }
+        if (stockQuantity < 0) {
+            throw new IllegalArgumentException("stockQuantity must be greater than or equal to zero");
+        }
+        this.name = name;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
     }
 
     public Long getProductId() {
@@ -73,5 +88,9 @@ public class Product {
 
     public void setStockQuantity(int stockQuantity) {
         this.stockQuantity = stockQuantity;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 }

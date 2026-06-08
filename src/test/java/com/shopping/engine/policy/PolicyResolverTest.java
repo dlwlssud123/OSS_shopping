@@ -89,4 +89,28 @@ class PolicyResolverTest {
         BigDecimal finalPrice = orderItem.getOriginalPrice().subtract(totalDiscount);
         assertThat(finalPrice).isEqualByComparingTo("0.00");
     }
+
+    @Test
+    @DisplayName("정책 설정에서 RATE 할인을 비활성화하면 VIP도 정액 할인만 적용된다")
+    void dynamicPolicySettingDisablesRatePolicy() {
+        // given
+        DiscountPolicySettings settings = new DiscountPolicySettings();
+        settings.update("RATE", false, null, null, null, null);
+        PolicyResolver resolver = new PolicyResolver(Arrays.asList(
+                new FixDiscountPolicy(settings),
+                new RateDiscountPolicy(settings)
+        ));
+
+        Customer customer = new Customer("VipUser", Grade.VIP);
+        Product product = new Product("MacBook", new BigDecimal("10000.00"), 10);
+        OrderItem orderItem = new OrderItem(product, 1, product.getPrice());
+
+        // when
+        BigDecimal totalDiscount = resolver.applyDiscountRules(customer, Collections.singletonList(orderItem));
+
+        // then
+        assertThat(totalDiscount).isEqualByComparingTo("1000.00");
+        assertThat(orderItem.getAppliedDiscounts()).hasSize(1);
+        assertThat(orderItem.getAppliedDiscounts().get(0).getPolicyName()).contains("Fix Discount");
+    }
 }

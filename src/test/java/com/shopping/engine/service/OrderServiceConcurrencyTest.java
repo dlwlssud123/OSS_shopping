@@ -121,4 +121,25 @@ class OrderServiceConcurrencyTest {
                 .count();
         assertThat(failedOrderCount).isEqualTo(20);
     }
+
+    @Test
+    @DisplayName("COMPLETE 주문을 취소하면 상태가 CANCELED로 바뀌고 차감된 재고가 복구된다")
+    void cancelCompleteOrderRestoresStock() {
+        // given
+        ItemDto itemDto = new ItemDto(targetProduct.getProductId(), 2);
+        OrderResponseDto completed = orderService.processOrder(
+                customer.getId(),
+                Collections.singletonList(itemDto),
+                "CANCEL-" + UUID.randomUUID()
+        );
+        assertThat(completed.status()).isEqualTo("COMPLETE");
+
+        // when
+        OrderResponseDto canceled = orderService.cancelOrder(completed.orderId());
+
+        // then
+        Product updatedProduct = productRepository.findById(targetProduct.getProductId()).orElseThrow();
+        assertThat(canceled.status()).isEqualTo("CANCELED");
+        assertThat(updatedProduct.getStockQuantity()).isEqualTo(10);
+    }
 }

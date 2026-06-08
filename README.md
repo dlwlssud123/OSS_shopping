@@ -109,6 +109,41 @@ VM 서버의 방화벽(인바운드 규칙)에서 `8080` 포트를 개방한 후
 
 ## ⚡ 주요 API 명세 요약
 
+### 상품 관리 및 검색
+
+- `GET /api/products`: 전체 상품 조회
+- `GET /api/products?keyword=맥북`: 상품명 검색
+- `GET /api/products/{productId}`: 상품 상세 조회
+- `POST /api/products`: 상품 등록
+- `PUT /api/products/{productId}`: 상품 수정
+- `DELETE /api/products/{productId}`: 상품 삭제
+
+상품 수정에는 `Product.version`의 `@Version` 기반 optimistic locking을 사용하고, 결제/취소 재고 변경에는 `PESSIMISTIC_WRITE`를 사용한다.
+
+### 할인 정책 설정
+
+- `GET /api/policies`: 현재 할인 정책 설정 조회
+- `PUT /api/policies/RATE`: VIP/VVIP 비율 할인 정책 수정
+- `PUT /api/policies/FIX`: 정액 할인 정책 수정
+
+예시 요청:
+
+```json
+{
+  "enabled": true,
+  "priority": 1,
+  "exclusive": false,
+  "discountRate": 0.15,
+  "discountAmount": null
+}
+```
+
+`PolicyResolver`는 매 계산 시 최신 priority와 enabled 설정을 반영한다.
+
+### 주문 취소
+
+- `POST /api/orders/{orderId}/cancel`: `COMPLETE` 주문을 `CANCELED`로 전이하고 차감된 재고를 복구한다.
+
 ### 1. 데모 데이터 초기화 (POST)
 - **Endpoint**: `/api/init`
 - **Description**: 테스트에 필요한 기본 회원(BASIC, VIP, VVIP 등급) 및 상품 데이터(재고 상태)를 H2 DB에 초기 생성합니다.

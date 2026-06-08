@@ -62,9 +62,24 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts() {
-        return ResponseEntity.ok(productRepository.findAll());
+    @PostMapping("/orders/{orderId}/cancel")
+    public ResponseEntity<OrderResponseDto> cancelOrder(@PathVariable Long orderId) {
+        try {
+            return ResponseEntity.ok(orderService.cancelOrder(orderId));
+        } catch (Exception e) {
+            log.error("Order cancel failed with exception", e);
+            OrderResponseDto errorResponse = new OrderResponseDto(
+                    orderId,
+                    null,
+                    "FAILED",
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    null,
+                    e.getMessage()
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @GetMapping("/customers")

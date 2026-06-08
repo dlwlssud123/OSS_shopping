@@ -2,6 +2,7 @@ package com.shopping.engine.policy;
 
 import com.shopping.engine.domain.Customer;
 import com.shopping.engine.domain.OrderItem;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -9,29 +10,39 @@ import java.math.BigDecimal;
 @Component
 public class FixDiscountPolicy implements DiscountPolicy {
 
-    private final BigDecimal discountAmount = new BigDecimal("1000.00");
+    private final DiscountPolicySettings settings;
+
+    @Autowired
+    public FixDiscountPolicy(DiscountPolicySettings settings) {
+        this.settings = settings;
+    }
+
+    public FixDiscountPolicy() {
+        this(new DiscountPolicySettings());
+    }
 
     @Override
     public int getPriority() {
-        return 2; // RateDiscountPolicy 보다 낮은 우선순위
+        return settings.getFixPolicy().getPriority();
     }
 
     @Override
     public boolean isExclusive() {
-        return true; // 이 정책이 적용되면 이후 할인 정책 적용을 중단시킴
+        return settings.getFixPolicy().isExclusive();
     }
 
     @Override
     public String getPolicyName() {
-        return "Fix Discount (1,000 KRW)";
+        return "Fix Discount (" + settings.getFixPolicy().getDiscountAmount().stripTrailingZeros().toPlainString() + " KRW)";
     }
 
     @Override
     public BigDecimal discount(Customer customer, OrderItem orderItem) {
-        BigDecimal originalPrice = orderItem.getOriginalPrice();
-        // 원가보다 할인액이 클 수는 있지만, PolicyResolver에서 최종 보정 처리됨
-        if (originalPrice.compareTo(BigDecimal.ZERO) > 0) {
-            return discountAmount;
+        if (!settings.getFixPolicy().isEnabled()) {
+            return BigDecimal.ZERO;
+        }
+        if (orderItem.getOriginalPrice().compareTo(BigDecimal.ZERO) > 0) {
+            return settings.getFixPolicy().getDiscountAmount();
         }
         return BigDecimal.ZERO;
     }

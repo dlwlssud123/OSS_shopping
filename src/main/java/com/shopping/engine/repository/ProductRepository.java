@@ -8,10 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Product p where p.productId = :id")
     Optional<Product> findByIdWithPessimisticLock(@Param("id") Long id);
+
+    List<Product> findByNameContainingIgnoreCase(String name);
 }
