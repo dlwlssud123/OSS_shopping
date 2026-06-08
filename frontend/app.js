@@ -19,6 +19,7 @@ const btnRegenKey = document.getElementById('btn-regen-key');
 const btnSubmitPayment = document.getElementById('btn-submit-payment');
 const logConsole = document.getElementById('log-console');
 const btnClearLogs = document.getElementById('btn-clear-logs');
+const btnAdminMode = document.getElementById('btn-admin-mode');
 
 // App Initialization
 window.addEventListener('DOMContentLoaded', () => {
@@ -31,6 +32,9 @@ window.addEventListener('DOMContentLoaded', () => {
     btnRegenKey.addEventListener('click', generateIdempotencyKey);
     btnSubmitPayment.addEventListener('click', submitPayment);
     btnClearLogs.addEventListener('click', clearLogs);
+    if (btnAdminMode) {
+        btnAdminMode.addEventListener('click', handleAdminModeAccess);
+    }
 
     // Initial load
     loadData();
@@ -413,4 +417,19 @@ async function submitPayment() {
 // Helpers
 function formatWon(value) {
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
+}
+
+function handleAdminModeAccess() {
+    const password = prompt('관리자 인증 비밀번호를 입력해 주세요:');
+    if (password === null) return;
+    
+    if (password === 'admin1234') {
+        addLog('관리자 인증에 성공했습니다. 관리자 페이지로 이동합니다.', 'success');
+        setTimeout(() => {
+            window.location.href = 'admin.html';
+        }, 500);
+    } else {
+        addLog('관리자 인증 비밀번호가 일치하지 않습니다.', 'error');
+        alert('비밀번호가 올바르지 않습니다.');
+    }
 }
