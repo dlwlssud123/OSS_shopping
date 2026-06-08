@@ -22,8 +22,8 @@ public class MockPaymentGateway implements PaymentGateway {
             return new PaymentResponse(false, null, "Card limit exceeded (잔액 부족)");
         }
         
-        if (request.amount().compareTo(new BigDecimal("999999")) >= 0) {
-            return new PaymentResponse(false, null, "Invalid payment amount limit");
+        if (request.amount().compareTo(new BigDecimal("10000000")) >= 0) {
+            return new PaymentResponse(false, null, "Invalid payment amount limit (10,000,000 KRW limit)");
         }
 
         // 성공 응답
