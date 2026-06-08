@@ -111,15 +111,15 @@ async function fetchPolicies() {
         const policies = await res.json();
         
         // RATE 설정 셋팅
-        const ratePol = policies.find(p => p.policyType === 'RATE') || {};
-        policyRateActive.checked = ratePol.active || false;
+        const ratePol = policies.find(p => p.type === 'RATE') || {};
+        policyRateActive.checked = ratePol.enabled || false;
         policyRatePriority.value = ratePol.priority || 1;
         policyRateExclusive.value = String(ratePol.exclusive || false);
         policyRateValue.value = ratePol.discountRate || 0.10;
 
         // FIX 설정 셋팅
-        const fixPol = policies.find(p => p.policyType === 'FIX') || {};
-        policyFixActive.checked = fixPol.active || false;
+        const fixPol = policies.find(p => p.type === 'FIX') || {};
+        policyFixActive.checked = fixPol.enabled || false;
         policyFixPriority.value = fixPol.priority || 2;
         policyFixExclusive.value = String(fixPol.exclusive || false);
         policyFixValue.value = fixPol.discountAmount || 1000;
