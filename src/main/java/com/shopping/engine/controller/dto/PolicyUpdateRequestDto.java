@@ -7,5 +7,8 @@ public record PolicyUpdateRequestDto(
     Integer priority,
     Boolean exclusive,
     BigDecimal discountRate,
-    BigDecimal discountAmount
+    BigDecimal discountAmount,
+    BigDecimal basicDiscountRate,
+    BigDecimal vipDiscountRate,
+    BigDecimal vvipDiscountRate
 ) {}

@@ -39,8 +39,18 @@ public class RateDiscountPolicy implements DiscountPolicy {
         if (!settings.getRatePolicy().isEnabled()) {
             return BigDecimal.ZERO;
         }
-        if (customer.getGrade() == Grade.VIP || customer.getGrade() == Grade.VVIP) {
-            return orderItem.getOriginalPrice().multiply(settings.getRatePolicy().getDiscountRate());
+        
+        BigDecimal rate = BigDecimal.ZERO;
+        if (customer.getGrade() == Grade.BASIC) {
+            rate = settings.getRatePolicy().getBasicDiscountRate();
+        } else if (customer.getGrade() == Grade.VIP) {
+            rate = settings.getRatePolicy().getVipDiscountRate();
+        } else if (customer.getGrade() == Grade.VVIP) {
+            rate = settings.getRatePolicy().getVvipDiscountRate();
+        }
+
+        if (rate.compareTo(BigDecimal.ZERO) > 0) {
+            return orderItem.getOriginalPrice().multiply(rate);
         }
         return BigDecimal.ZERO;
     }

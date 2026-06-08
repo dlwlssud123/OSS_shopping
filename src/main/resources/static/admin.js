@@ -17,7 +17,9 @@ const btnInitData = document.getElementById('btn-init-data');
 const policyRateActive = document.getElementById('policy-rate-active');
 const policyRatePriority = document.getElementById('policy-rate-priority');
 const policyRateExclusive = document.getElementById('policy-rate-exclusive');
-const policyRateValue = document.getElementById('policy-rate-value');
+const policyRateBasic = document.getElementById('policy-rate-basic');
+const policyRateVip = document.getElementById('policy-rate-vip');
+const policyRateVvip = document.getElementById('policy-rate-vvip');
 const btnSaveRatePolicy = document.getElementById('btn-save-rate-policy');
 
 const policyFixActive = document.getElementById('policy-fix-active');
@@ -115,7 +117,9 @@ async function fetchPolicies() {
         policyRateActive.checked = ratePol.enabled || false;
         policyRatePriority.value = ratePol.priority || 1;
         policyRateExclusive.value = String(ratePol.exclusive || false);
-        policyRateValue.value = ratePol.discountRate || 0.10;
+        policyRateBasic.value = ratePol.basicDiscountRate !== undefined ? ratePol.basicDiscountRate : 0.00;
+        policyRateVip.value = ratePol.vipDiscountRate !== undefined ? ratePol.vipDiscountRate : 0.10;
+        policyRateVvip.value = ratePol.vvipDiscountRate !== undefined ? ratePol.vvipDiscountRate : 0.20;
 
         // FIX 설정 셋팅
         const fixPol = policies.find(p => p.type === 'FIX') || {};
@@ -139,7 +143,10 @@ async function savePolicy(type) {
             enabled: policyRateActive.checked,
             priority: parseInt(policyRatePriority.value),
             exclusive: policyRateExclusive.value === 'true',
-            discountRate: parseFloat(policyRateValue.value)
+            discountRate: parseFloat(policyRateVip.value),
+            basicDiscountRate: parseFloat(policyRateBasic.value),
+            vipDiscountRate: parseFloat(policyRateVip.value),
+            vvipDiscountRate: parseFloat(policyRateVvip.value)
         };
     } else {
         payload = {

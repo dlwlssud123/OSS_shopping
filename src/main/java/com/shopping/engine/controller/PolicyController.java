@@ -28,13 +28,16 @@ public class PolicyController {
             @PathVariable String type,
             @RequestBody PolicyUpdateRequestDto request
     ) {
-        return ResponseEntity.ok(policySettings.update(
+        return ResponseEntity.ok(policySettings.updateExtended(
                 type,
                 request.enabled(),
                 request.priority(),
                 request.exclusive(),
                 request.discountRate(),
-                request.discountAmount()
+                request.discountAmount(),
+                request.basicDiscountRate(),
+                request.vipDiscountRate(),
+                request.vvipDiscountRate()
         ));
     }
 }

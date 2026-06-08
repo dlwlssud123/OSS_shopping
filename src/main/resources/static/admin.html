@@ -55,9 +55,19 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="policy-rate-value">할인 비율 (Rate, 0.0 ~ 1.0)</label>
-                                <input type="number" id="policy-rate-value" class="styled-input" step="0.01" min="0" max="1">
+                            <div class="policy-form-row" style="margin-top: 10px; grid-template-columns: 1fr 1fr 1fr; display: grid; gap: 12px;">
+                                <div class="form-group">
+                                    <label for="policy-rate-basic">BASIC 할인율</label>
+                                    <input type="number" id="policy-rate-basic" class="styled-input" step="0.01" min="0" max="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="policy-rate-vip">VIP 할인율</label>
+                                    <input type="number" id="policy-rate-vip" class="styled-input" step="0.01" min="0" max="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="policy-rate-vvip">VVIP 할인율</label>
+                                    <input type="number" id="policy-rate-vvip" class="styled-input" step="0.01" min="0" max="1">
+                                </div>
                             </div>
                             <button id="btn-save-rate-policy" class="btn-secondary btn-block">정률 정책 저장</button>
                         </div>
