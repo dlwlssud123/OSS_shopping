@@ -267,7 +267,7 @@ function renderCart() {
             <div class="cart-item-name">${product.name}</div>
             <div class="cart-item-controls">
                 <button class="cart-qty-btn decrease">-</button>
-                <span class="cart-qty-val">${qty}</span>
+                <input type="number" class="cart-qty-input" value="${qty}" min="1" max="${product.stockQuantity}" style="width: 50px; text-align: center; padding: 4px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: inherit; font-weight: 700;">
                 <button class="cart-qty-btn increase">+</button>
                 <div class="cart-item-price">${formatWon(product.price * qty)}</div>
             </div>
@@ -275,6 +275,25 @@ function renderCart() {
 
         cartItemDiv.querySelector('.decrease').addEventListener('click', () => updateCartQty(pId, -1));
         cartItemDiv.querySelector('.increase').addEventListener('click', () => updateCartQty(pId, 1));
+
+        const qtyInput = cartItemDiv.querySelector('.cart-qty-input');
+        qtyInput.addEventListener('change', (e) => {
+            let newQty = parseInt(e.target.value);
+            if (isNaN(newQty) || newQty <= 0) {
+                delete cart[pId];
+                addLog(`'${product.name}' 상품이 장바구니에서 삭제되었습니다.`, 'info');
+                renderCart();
+            } else if (newQty > product.stockQuantity) {
+                cart[pId] = product.stockQuantity;
+                addLog(`재고 수량(${product.stockQuantity}개)을 초과할 수 없습니다.`, 'warn');
+                renderCart();
+            } else {
+                cart[pId] = newQty;
+                addLog(`'${product.name}' 수량을 ${newQty}개로 변경했습니다.`, 'info');
+                renderCart();
+            }
+        });
+
         cartItems.appendChild(cartItemDiv);
     });
 
