@@ -1,10 +1,6 @@
 package com.shopping.engine.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,9 +8,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "order_items")
-@Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItem {
 
     @Id
@@ -38,6 +31,9 @@ public class OrderItem {
     @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiscountInfo> appliedDiscounts = new ArrayList<>();
 
+    protected OrderItem() {
+    }
+
     public OrderItem(Product product, int quantity, BigDecimal unitPrice) {
         this.product = product;
         this.quantity = quantity;
@@ -57,5 +53,53 @@ public class OrderItem {
     
     public BigDecimal getOriginalPrice() {
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
+
+    public void setOrderItemId(Long orderItemId) {
+        this.orderItemId = orderItemId;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public List<DiscountInfo> getAppliedDiscounts() {
+        return appliedDiscounts;
+    }
+
+    public void setAppliedDiscounts(List<DiscountInfo> appliedDiscounts) {
+        this.appliedDiscounts = appliedDiscounts;
     }
 }

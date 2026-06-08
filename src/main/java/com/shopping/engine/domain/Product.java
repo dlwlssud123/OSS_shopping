@@ -2,18 +2,11 @@ package com.shopping.engine.domain;
 
 import com.shopping.engine.exception.NotEnoughStockException;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "products")
-@Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product {
 
     @Id
@@ -28,6 +21,9 @@ public class Product {
 
     @Column(nullable = false)
     private int stockQuantity;
+
+    protected Product() {
+    }
 
     public Product(String name, BigDecimal price, int stockQuantity) {
         this.name = name;
@@ -45,5 +41,37 @@ public class Product {
 
     public void addStock(int quantity) {
         this.stockQuantity += quantity;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public int getStockQuantity() {
+        return stockQuantity;
+    }
+
+    public void setStockQuantity(int stockQuantity) {
+        this.stockQuantity = stockQuantity;
     }
 }

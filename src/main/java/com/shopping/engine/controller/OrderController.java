@@ -8,8 +8,8 @@ import com.shopping.engine.domain.Product;
 import com.shopping.engine.repository.CustomerRepository;
 import com.shopping.engine.repository.ProductRepository;
 import com.shopping.engine.service.OrderService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +19,22 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 @CrossOrigin(origins = "*", allowedHeaders = "*") // GitHub Pages 및 로컬 테스트 CORS 완전 허용
-@Slf4j
 public class OrderController {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
 
     private final OrderService orderService;
     private final ProductRepository productRepository;
     private final CustomerRepository customerRepository;
+
+    public OrderController(OrderService orderService, 
+                           ProductRepository productRepository, 
+                           CustomerRepository customerRepository) {
+        this.orderService = orderService;
+        this.productRepository = productRepository;
+        this.customerRepository = customerRepository;
+    }
 
     @PostMapping("/orders")
     public ResponseEntity<OrderResponseDto> createOrder(@RequestBody OrderRequestDto request) {

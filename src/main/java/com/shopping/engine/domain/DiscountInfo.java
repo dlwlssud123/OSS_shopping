@@ -1,18 +1,11 @@
 package com.shopping.engine.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "discount_info")
-@Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DiscountInfo {
 
     @Id
@@ -29,8 +22,43 @@ public class DiscountInfo {
     @JoinColumn(name = "order_item_id")
     private OrderItem orderItem;
 
+    protected DiscountInfo() {
+    }
+
     public DiscountInfo(String policyName, BigDecimal discountAmount) {
         this.policyName = policyName;
         this.discountAmount = discountAmount;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPolicyName() {
+        return policyName;
+    }
+
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public OrderItem getOrderItem() {
+        return orderItem;
+    }
+
+    public void setOrderItem(OrderItem orderItem) {
+        this.orderItem = orderItem;
     }
 }

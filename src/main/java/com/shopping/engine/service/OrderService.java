@@ -10,8 +10,8 @@ import com.shopping.engine.policy.PolicyResolver;
 import com.shopping.engine.repository.CustomerRepository;
 import com.shopping.engine.repository.OrderRepository;
 import com.shopping.engine.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +20,27 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class OrderService {
+
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final PolicyResolver policyResolver;
     private final PaymentGateway paymentGateway;
+
+    public OrderService(ProductRepository productRepository, 
+                        OrderRepository orderRepository, 
+                        CustomerRepository customerRepository, 
+                        PolicyResolver policyResolver, 
+                        PaymentGateway paymentGateway) {
+        this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.customerRepository = customerRepository;
+        this.policyResolver = policyResolver;
+        this.paymentGateway = paymentGateway;
+    }
 
     @Transactional
     public OrderResponseDto processOrder(Long customerId, List<ItemDto> items, String idempotencyKey) {
@@ -67,9 +79,16 @@ public class OrderService {
         order.changeStatus(OrderStatus.PAYMENT_PENDING);
 
         // 6. 재고 선차감 실행
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Product product = orderItem.getProduct();
-            product.removeStock(orderItem.getQuantity());
+        try {
+            for (OrderItem orderItem : order.getOrderItems()) {
+                Product product = orderItem.getProduct();
+                product.removeStock(orderItem.getQuantity());
+            }
+        } catch (com.shopping.engine.exception.NotEnoughStockException e) {
+            log.warn("Stock insufficient for order. Marking as FAILED.", e);
+            order.changeStatus(OrderStatus.FAILED);
+            order = orderRepository.save(order);
+            return makeOrderResponseDto(order, null, "재고 부족: " + e.getMessage());
         }
 
         // 1차 주문 저장 (ID 식별자 발급 및 상태 저장을 위함)

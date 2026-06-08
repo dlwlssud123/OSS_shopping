@@ -10,7 +10,7 @@
 - **Backend**: Java 17, Spring Boot 3.2.5, Spring Data JPA, Spring Web
 - **Frontend**: HTML5, Vanilla CSS, JavaScript (내장 리소스 패키징)
 - **Database**: H2 Database (In-Memory 환경으로 즉시 구동)
-- **Build Tool**: Gradle 8.5+
+- **Build Tool**: Maven 3.9+
 - **Infrastructure**: Docker, VM 호환 단일 아카이브 구조
 
 ---
@@ -83,18 +83,21 @@ src/main/resources/static (웹 프론트엔드 내장 리소스)
 
 ### 1. 로컬에서 구동 및 테스트하기
 ```bash
-# 1. 빌드 수행 (build/libs/ 밑에 JAR 파일 생성됨)
-./gradlew bootJar
+# 1. 빌드 및 패키징 수행 (target/ 밑에 JAR 파일 생성됨)
+mvn clean package
 
 # 2. 애플리케이션 실행
-java -jar build/libs/OSS_shopping-0.0.1-SNAPSHOT.jar
+java -jar target/engine-0.0.1-SNAPSHOT.jar
+
+# (대안) 빌드 도구를 통한 직접 실행
+mvn spring-boot:run
 ```
 실행이 완료되면 브라우저에서 **`http://localhost:8080`**으로 접속하여 웹 시뮬레이터에 진입할 수 있습니다.
 
 ### 2. 가상 머신(VM) 및 Docker 배포하기
 VM 인스턴스에 접속하여 프로젝트를 다운로드한 후, Docker를 통해 원격 배포를 한 번에 완료할 수 있습니다.
 ```bash
-# 1. 로컬 또는 CI 환경에서 JAR 파일 빌드 후 도커 이미지 빌드
+# 1. 로컬 또는 빌드 서버에서 JAR 파일 빌드 후 도커 이미지 빌드
 docker build -t shopping-engine .
 
 # 2. 도커 컨테이너 기동 (8080 포트 오픈)
@@ -144,5 +147,5 @@ VM 서버의 방화벽(인바운드 규칙)에서 `8080` 포트를 개방한 후
 
 ```bash
 # 테스트 명령어 실행
-./gradlew test
+mvn test
 ```

@@ -1,2 +1,6 @@
 Design with examples/
 Analysis with examples/
+target/
+.gradle/
+.idea/
+*.class

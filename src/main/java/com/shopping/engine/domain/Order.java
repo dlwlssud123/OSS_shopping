@@ -1,10 +1,6 @@
 package com.shopping.engine.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -12,9 +8,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "orders")
-@Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order {
 
     @Id
@@ -41,6 +34,9 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status;
 
+    protected Order() {
+    }
+
     public Order(String idempotencyKey, Customer customer) {
         this.idempotencyKey = idempotencyKey;
         this.customer = customer;
@@ -64,6 +60,62 @@ public class Order {
     }
 
     public void changeStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    public BigDecimal getTotalOriginalPrice() {
+        return totalOriginalPrice;
+    }
+
+    public void setTotalOriginalPrice(BigDecimal totalOriginalPrice) {
+        this.totalOriginalPrice = totalOriginalPrice;
+    }
+
+    public BigDecimal getTotalDiscountAmount() {
+        return totalDiscountAmount;
+    }
+
+    public void setTotalDiscountAmount(BigDecimal totalDiscountAmount) {
+        this.totalDiscountAmount = totalDiscountAmount;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 }
