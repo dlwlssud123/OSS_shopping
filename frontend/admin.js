@@ -1,3 +1,9 @@
+// Auth Check
+if (sessionStorage.getItem('adminAuthorized') !== 'true') {
+    alert('관리자 인증이 필요합니다. 구매자 페이지에서 인증 후 접근하세요.');
+    window.location.href = 'index.html';
+}
+
 // Admin State Management
 let apiBaseUrl = 'http://localhost:8080';
 let products = [];
@@ -51,6 +57,14 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Log Listeners
     btnClearLogs.addEventListener('click', clearLogs);
+
+    // 구매자 모드로 나갈 때 세션 삭제
+    const btnCustomerMode = document.querySelector('.btn-admin-link');
+    if (btnCustomerMode) {
+        btnCustomerMode.addEventListener('click', () => {
+            sessionStorage.removeItem('adminAuthorized');
+        });
+    }
 
     // Initial Load
     loadAdminData();
@@ -122,14 +136,14 @@ async function savePolicy(type) {
     let payload = {};
     if (type === 'RATE') {
         payload = {
-            active: policyRateActive.checked,
+            enabled: policyRateActive.checked,
             priority: parseInt(policyRatePriority.value),
             exclusive: policyRateExclusive.value === 'true',
             discountRate: parseFloat(policyRateValue.value)
         };
     } else {
         payload = {
-            active: policyFixActive.checked,
+            enabled: policyFixActive.checked,
             priority: parseInt(policyFixPriority.value),
             exclusive: policyFixExclusive.value === 'true',
             discountAmount: parseFloat(policyFixValue.value)

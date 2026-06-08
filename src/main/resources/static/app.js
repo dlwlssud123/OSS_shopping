@@ -449,12 +449,13 @@ function handleAdminModeAccess() {
     if (password === null) return;
     
     if (password === 'admin1234') {
+        sessionStorage.setItem('adminAuthorized', 'true');
         addLog('관리자 인증에 성공했습니다. 관리자 페이지로 이동합니다.', 'success');
         setTimeout(() => {
             window.location.href = 'admin.html';
         }, 500);
     } else {
-        addLog('관리자 인증 비밀번호가 일치하지 않습니다.', 'error');
+        addLog('admin1234 비밀번호가 맞지 않습니다.', 'error');
         alert('비밀번호가 올바르지 않습니다.');
     }
 }
