@@ -4,6 +4,7 @@ let products = [];
 let customers = [];
 let cart = {}; // productId -> quantity
 let selectedCustomer = null;
+let policiesSetting = [];
 
 // DOM Elements
 const apiInput = document.getElementById('api-url');
@@ -69,9 +70,20 @@ function clearLogs() {
 // Fetch Data from API
 async function loadData() {
     try {
-        await Promise.all([fetchCustomers(), fetchProducts()]);
+        await Promise.all([fetchCustomers(), fetchProducts(), fetchPolicies()]);
     } catch (e) {
         addLog(`데이터 로드 중 오류가 발생했습니다. 백엔드가 구동 중인지 확인하세요. (${e.message})`, 'error');
+    }
+}
+
+async function fetchPolicies() {
+    try {
+        const res = await fetch(`${apiBaseUrl}/api/policies`);
+        if (!res.ok) throw new Error('API 응답 오류');
+        policiesSetting = await res.json();
+        addLog('최신 할인 정책 설정을 가져왔습니다.', 'info');
+    } catch (e) {
+        throw new Error(`할인 정책 조회 실패: ${e.message}`);
     }
 }
 
@@ -283,9 +295,14 @@ function updateCartSummary() {
 
     // 로컬 시뮬레이션 예상 할인 산출 로직 (백엔드 PolicyResolver와 정합)
     let discountTotal = 0;
-    if (selectedCustomer && Object.keys(cart).length > 0) {
+    if (selectedCustomer && Object.keys(cart).length > 0 && policiesSetting.length > 0) {
         const isVip = selectedCustomer.grade === 'VIP' || selectedCustomer.grade === 'VVIP';
         
+        // 활성화된 할인 정책들만 우선순위(Priority) 순서대로 정렬
+        const activePol = policiesSetting
+            .filter(p => p.enabled)
+            .sort((a, b) => a.priority - b.priority);
+
         Object.keys(cart).forEach(pIdKey => {
             const pId = parseInt(pIdKey);
             const qty = cart[pId];
@@ -295,22 +312,30 @@ function updateCartSummary() {
             const itemPrice = product.price * qty;
             let itemDiscount = 0;
 
-            // 1. VIP 등급 10% 할인 (Priority 1, Exclusive = false)
-            if (isVip) {
-                itemDiscount += itemPrice * 0.10;
-            }
+            for (const policy of activePol) {
+                let remaining = itemPrice - itemDiscount;
+                if (remaining <= 0) break;
 
-            // 2. 1,000원 정액 할인 (Priority 2, Exclusive = true)
-            // exclusive 조건이므로 10% 할인이 적용되었어도 정액할인을 얹어서 하되 중단
-            let remaining = itemPrice - itemDiscount;
-            if (remaining > 0) {
-                let fixDiscount = Math.min(1000, remaining);
-                itemDiscount += fixDiscount;
-            }
+                let policyDiscount = 0;
+                if (policy.type === 'RATE') {
+                    if (isVip) {
+                        policyDiscount = itemPrice * policy.discountRate;
+                    }
+                } else if (policy.type === 'FIX') {
+                    // OrderItem(건당) 전체에 고정금액 할인 1회 부여 (백엔드 정합)
+                    policyDiscount = policy.discountAmount;
+                }
 
-            // 하한선 보정
-            if (itemDiscount > itemPrice) {
-                itemDiscount = itemPrice;
+                if (policyDiscount > 0) {
+                    if (policyDiscount > remaining) {
+                        policyDiscount = remaining;
+                    }
+                    itemDiscount += policyDiscount;
+
+                    if (policy.exclusive) {
+                        break;
+                    }
+                }
             }
 
             discountTotal += itemDiscount;
