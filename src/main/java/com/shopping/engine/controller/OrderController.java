@@ -81,6 +81,7 @@ public class OrderController {
             customerRepository.save(new Customer("이진녕 (BASIC)", Grade.BASIC));
             customerRepository.save(new Customer("김철수 (VIP)", Grade.VIP));
             customerRepository.save(new Customer("홍길동 (VVIP)", Grade.VVIP));
+            customerRepository.save(new Customer("FAIL_USER", Grade.BASIC));
         }
 
         if (productRepository.count() == 0) {

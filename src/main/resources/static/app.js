@@ -118,16 +118,16 @@ async function initDemoData() {
 function renderCustomers() {
     selectCustomer.innerHTML = '<option value="">-- 회원을 선택하세요 --</option>';
     
-    // 추가로 강제 결제 실패 모의 테스트용 회원 생성
-    const mockFailCustomer = { id: 9999, name: 'FAIL_USER (결제실패 테스트용)', grade: 'BASIC' };
-    const allCustomers = [...customers, mockFailCustomer];
-
-    allCustomers.forEach(c => {
+    customers.forEach(c => {
         const option = document.createElement('option');
         option.value = c.id;
         option.dataset.name = c.name;
         option.dataset.grade = c.grade;
-        option.textContent = `${c.name} [${c.grade}]`;
+        if (c.name === 'FAIL_USER') {
+            option.textContent = `${c.name} [${c.grade}] (결제실패 테스트용)`;
+        } else {
+            option.textContent = `${c.name} [${c.grade}]`;
+        }
         selectCustomer.appendChild(option);
     });
     
